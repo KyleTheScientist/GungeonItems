@@ -28,15 +28,12 @@ class BloodyShield : PlayerItem
         //Generate a new GameObject with a sprite component
         GameObject spriteObj = ItemBuilder.CreateSpriteObject(itemName, resourceName);
 
-        //Add a ActiveItem component to the object. This can be another class, or you can implement it here.
+        //Add an ActiveItem component to the object. This can be another class, or you can implement it here.
         BloodyShield item = spriteObj.AddComponent<BloodyShield>();
 
         //Ammonomicon entry variables
         string shortDesc = "Iron from Blood";
         string longDesc = "Trades hearts for armor.";
-
-        //Adds the item to the gungeon item list, the ammonomicon, the loot table, etc.
-        ItemBuilder.SetupItem(item, shortDesc, longDesc, "kts");
 
         //Set the cooldown type and duration of the cooldown
         ItemBuilder.SetCooldownType(item, ItemBuilder.CooldownType.Timed, 1.5f);
@@ -47,6 +44,9 @@ class BloodyShield : PlayerItem
         //Set some other fields
         item.consumable = false;
         item.quality = ItemQuality.B;
+        
+        //Adds the item to the gungeon item list, the ammonomicon, the loot table, etc. Really makes it official!
+        ItemBuilder.SetupItem(item, shortDesc, longDesc, "kts");
     }
     
     //Item Functionality (This can go in another class, or you can just do it here.)
