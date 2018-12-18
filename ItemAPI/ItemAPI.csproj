@@ -62,7 +62,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\CustomItem.cs" />
+    <Compile Include="src\ItemBuilder.cs" />
     <Compile Include="src\ExampleActive.cs" />
     <Compile Include="src\ExamplePassive.cs" />
     <Compile Include="src\Serializer.cs" />

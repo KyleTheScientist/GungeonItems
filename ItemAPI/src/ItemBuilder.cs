@@ -3,11 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace ItemAPI
 {
-    public static class CustomItem
+    public static class ItemBuilder
     {
+        /// <summary>
+        /// Sets the base assembly of the ResourceExtractor, so 
+        /// resources can be accessed
+        /// </summary>
+        public static void Init()
+        {
+            MethodBase method = new StackFrame(1, false).GetMethod();
+            var declaringType = method.DeclaringType;
+            ResourceExtractor.SetAssembly(declaringType.Assembly);
+        }
+
         public enum CooldownType
         {
             Timed, Damage, PerRoom, None
@@ -17,9 +30,9 @@ namespace ItemAPI
         /// Creates an object with a sprite component and adds that sprite to the 
         /// ammonomicon for later use.
         /// </summary>
-        public static GameObject CreateSpriteObject(string name, string spriteFile, string resourceFolder = "Resources")
+        public static GameObject CreateSpriteObject(string name, string resourcePath)
         {
-            GameObject spriteObject = SpriteBuilder.SpriteFromResource(spriteFile, resourceFolder);
+            GameObject spriteObject = SpriteBuilder.SpriteFromResource(resourcePath);
             spriteObject.name = name;
             return spriteObject;
         }

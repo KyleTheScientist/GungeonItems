@@ -10,10 +10,10 @@ using System.Diagnostics;
 
 namespace ItemAPI
 {
-    class ResourceExtractor
+    public static class ResourceExtractor
     {
         readonly static string spritesDirectory = Path.Combine(ETGMod.ResourcesDirectory, "sprites");
-
+        private static Assembly baseAssembly;
         /// <summary>
         /// Converts all png's in a folder to a list of Texture2D objects
         /// </summary>
@@ -100,8 +100,11 @@ namespace ItemAPI
         /// </summary>
         public static byte[] ExtractEmbeddedResource(String filename)
         {
-            Assembly a = Assembly.GetCallingAssembly();
-            using (Stream resFilestream = a.GetManifestResourceStream(filename))
+            if (baseAssembly == null)
+            {
+                throw new NullReferenceException("Assembly not set! Did you call ItemBuilder.Init() ?");
+            }
+            using (Stream resFilestream = baseAssembly.GetManifestResourceStream(filename))
             {
                 if (resFilestream == null)
                 {
@@ -118,7 +121,7 @@ namespace ItemAPI
         /// </summary>
         public static Texture2D GetTextureFromResource(string resourceName)
         {
-            string file = Path.Combine(typeof(ResourceExtractor).Namespace, resourceName);
+            string file = resourceName;
             file = file.Replace("/", ".");
             file = file.Replace("\\", ".");
             byte[] bytes = ExtractEmbeddedResource(file);
@@ -132,9 +135,9 @@ namespace ItemAPI
             texture.filterMode = FilterMode.Point;
 
             string name = file.Substring(0, file.LastIndexOf('.'));
-            if(name.LastIndexOf('.') >= 0)
+            if (name.LastIndexOf('.') >= 0)
             {
-                name = name.Substring(name.LastIndexOf('.')+1);
+                name = name.Substring(name.LastIndexOf('.') + 1);
             }
             texture.name = name;
 
@@ -147,14 +150,27 @@ namespace ItemAPI
         /// </summary>
         public static string[] GetResourceNames()
         {
-            Assembly asm = System.Reflection.Assembly.GetCallingAssembly();
-            string[] names = asm.GetManifestResourceNames();
+            if(baseAssembly == null)
+            {
+                throw new NullReferenceException("Assembly not set! Did you call ItemBuilder.Init() ?");
+            }
+            string[] names = baseAssembly.GetManifestResourceNames();
             if (names == null)
             {
                 ETGModConsole.Log("No resources found.");
                 return null;
             }
             return names;
+        }
+
+        public static void SetAssembly(Assembly assembly)
+        {
+            baseAssembly = assembly;
+        }
+
+        public static void SetAssembly(Type t)
+        {
+            baseAssembly = t.Assembly;
         }
 
     }

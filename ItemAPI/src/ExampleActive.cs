@@ -12,10 +12,10 @@ namespace ItemAPI
         public static void Init()
         {
             string itemName = "Sweating Bullets"; //The name of the item
-            string resourceName = "sweating_bullets_icon"; //Refers to an embedded png in the project. Make sure to embed your resources!
+            string resourceName = "ItemAPI/Resources/sweating_bullets_icon"; //Refers to an embedded png in the project. Make sure to embed your resources!
             
             //Generate a new GameObject with a sprite component
-            GameObject spriteObj = CustomItem.CreateSpriteObject(itemName, resourceName);
+            GameObject spriteObj = ItemBuilder.CreateSpriteObject(itemName, resourceName);
 
             //Add a PassiveItem component to the object
             ExampleActive item = spriteObj.AddComponent<ExampleActive>(); 
@@ -25,13 +25,13 @@ namespace ItemAPI
             string longDesc = "While active, doubles damage, but reduces health to 1 hit. \n\nDon't get nervous!";
 
             //Adds the item to the gungeon item list, the ammonomicon, the loot table, etc.
-            CustomItem.SetupItem(item, shortDesc, longDesc, "examplepool");
+            ItemBuilder.SetupItem(item, shortDesc, longDesc, "examplepool");
 
             //Set the cooldown type and duration of the cooldown
-            CustomItem.SetCooldownType(item, CustomItem.CooldownType.Damage, 500);
+            ItemBuilder.SetCooldownType(item, ItemBuilder.CooldownType.Damage, 500);
 
             //Adds a passive modifier, like curse, coolness, damage, etc. to the item. Works for passives and actives.
-            CustomItem.AddPassiveStatModifier(item, PlayerStats.StatType.Curse, 2);
+            ItemBuilder.AddPassiveStatModifier(item, PlayerStats.StatType.Curse, 2);
 
             //Set some other fields
             item.consumable = false;

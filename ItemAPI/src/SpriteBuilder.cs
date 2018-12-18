@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace ItemAPI
 {
-    class SpriteBuilder
+    public static class SpriteBuilder
     {
         private static tk2dSpriteCollectionData itemCollection = PickupObjectDatabase.GetByEncounterName("singularity").sprite.Collection;
         private static tk2dSpriteCollectionData ammonomiconCollection = AmmonomiconController.ForceInstance.EncounterIconCollection;
@@ -30,11 +30,10 @@ namespace ItemAPI
         /// Returns an object with a tk2dSprite component with the 
         /// texture of an embedded resource
         /// </summary>
-        public static GameObject SpriteFromResource(string spriteName, string resourceFolder)
+        public static GameObject SpriteFromResource(string spriteName)
         {
             string extension = !spriteName.EndsWith(".png") ? ".png" : "";
             string resourcePath = spriteName + extension;
-            resourcePath = System.IO.Path.Combine(resourceFolder, resourcePath);
 
             var texture = ResourceExtractor.GetTextureFromResource(resourcePath);
             if (texture == null) return null;

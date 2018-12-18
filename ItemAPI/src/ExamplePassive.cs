@@ -12,10 +12,10 @@ namespace ItemAPI
         public static void Init()
         {
             string itemName = "Boss Bullets"; //The name of the item
-            string resourceName = "boss_bullets_icon"; //Refers to an embedded png in the project. Make sure to embed your resources!
+            string resourceName = "ItemAPI/Resources/boss_bullets_icon"; //Refers to an embedded png in the project. Make sure to embed your resources!
 
             //Generate a new GameObject with a sprite component
-            GameObject spriteObj = CustomItem.CreateSpriteObject(itemName, resourceName);
+            GameObject spriteObj = ItemBuilder.CreateSpriteObject(itemName, resourceName);
 
             //Add a PassiveItem component to the object
             PassiveItem item = spriteObj.AddComponent<PassiveItem>();
@@ -27,11 +27,11 @@ namespace ItemAPI
                 "Viva la Revolverlucion!";
 
             //Adds the item to the gungeon item list, the ammonomicon, the loot table, etc.
-            CustomItem.SetupItem(item, shortDesc, longDesc, "examplepool");
+            ItemBuilder.SetupItem(item, shortDesc, longDesc, "examplepool");
 
             //Adds the actual passive effect to the item
-            CustomItem.AddPassiveStatModifier(item, PlayerStats.StatType.DamageToBosses, 3, StatModifier.ModifyMethod.MULTIPLICATIVE);
-            CustomItem.AddPassiveStatModifier(item, PlayerStats.StatType.Curse, 1);
+            ItemBuilder.AddPassiveStatModifier(item, PlayerStats.StatType.DamageToBosses, 3, StatModifier.ModifyMethod.MULTIPLICATIVE);
+            ItemBuilder.AddPassiveStatModifier(item, PlayerStats.StatType.Curse, 1);
 
             //Set the rarity of the item
             item.quality = PickupObject.ItemQuality.S;
