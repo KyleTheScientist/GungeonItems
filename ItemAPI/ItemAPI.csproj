@@ -63,8 +63,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\ItemBuilder.cs" />
-    <Compile Include="src\ExampleActive.cs" />
-    <Compile Include="src\ExamplePassive.cs" />
+    <Compile Include="src\Examples\ExampleActive.cs" />
+    <Compile Include="src\Examples\ExamplePassive.cs" />
     <Compile Include="src\Serializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\ResourceExtractor.cs" />
