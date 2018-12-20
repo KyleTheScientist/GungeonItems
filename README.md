@@ -28,7 +28,7 @@ class BloodyShield : PlayerItem
         //The name of the item
         string itemName = "Bloody Shield"; 
             
-        //Refers to an embedded png in the project. Make sure to embed your resources!
+        //Refers to an icon embedded as a PNG in the project. Make sure to embed your resources!
         string resourceName = "CustomItems/Resources/armor_shield_heart_idle_001";
 
         //Generate a new GameObject with a sprite component
