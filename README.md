@@ -3,6 +3,12 @@ An API for creating custom active/passive items with Mod The Gungeon: Classic
 
 Allows you to create new items with custom sprites and effects
 
+Because of the way Mod the Gungeon loads external libraries, for now, you'll just have to add these cs files to your project:
+
+- ItemBuilder.cs
+- SpriteBuilder.cs
+- ResourceExtractor.cs
+
 ### Prerequisites
 
 .NET framework 2.0 or higher
