@@ -1,3 +1,7 @@
 ItemAPI/bin/
 ItemAPI/obj/
 .vs/
+ItemAPI/src/AnimationBuilder.cs
+ItemAPI/src/CustomGun.cs
+ItemAPI/src/Examples/ExampleGun.cs
+ItemAPI/src/Serializer.cs
