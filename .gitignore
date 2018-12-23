@@ -1,2 +1,3 @@
-ItemAPI/bin
-ItemAPI/obj
+ItemAPI/bin/
+ItemAPI/obj/
+.vs/
