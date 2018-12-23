@@ -20,7 +20,7 @@ namespace ItemAPI.src
             ItemBuilder.Init();
             ExampleActive.Init();
             ExamplePassive.Init();
-            ExampleGun.Init();
+            //ExampleGun.Init(); //Not implemented yet
         }
     }
 }
