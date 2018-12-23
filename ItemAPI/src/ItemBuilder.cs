@@ -5,6 +5,8 @@ using System.Text;
 using UnityEngine;
 using System.Diagnostics;
 using System.Reflection;
+using System.IO;
+using System.Collections;
 
 namespace ItemAPI
 {
@@ -16,9 +18,17 @@ namespace ItemAPI
         /// </summary>
         public static void Init()
         {
-            MethodBase method = new StackFrame(1, false).GetMethod();
-            var declaringType = method.DeclaringType;
-            ResourceExtractor.SetAssembly(declaringType.Assembly);
+            try
+            {
+                MethodBase method = new StackFrame(1, false).GetMethod();
+                var declaringType = method.DeclaringType;
+                ResourceExtractor.SetAssembly(declaringType);
+            }
+            catch (Exception e)
+            {
+                ETGModConsole.Log(e.Message);
+                ETGModConsole.Log(e.StackTrace);
+            }
         }
 
         public enum CooldownType
@@ -43,17 +53,27 @@ namespace ItemAPI
         /// </summary>
         public static void SetupItem(PickupObject item, string shortDesc, string longDesc, string idPool = "customItems")
         {
-            ETGMod.Databases.Items.SetupItem(item, item.name);
+            try
+            {
+                ETGMod.Databases.Items.SetupItem(item, item.name);
 
-            SpriteBuilder.AddToAmmonomicon(item.sprite.GetCurrentSpriteDef());
-            item.encounterTrackable.journalData.AmmonomiconSprite = item.sprite.GetCurrentSpriteDef().name;
+                SpriteBuilder.AddToAmmonomicon(item.sprite.GetCurrentSpriteDef());
+                item.encounterTrackable.journalData.AmmonomiconSprite = item.sprite.GetCurrentSpriteDef().name;
 
-            item.SetName(item.name);
-            item.SetShortDescription(shortDesc);
-            item.SetLongDescription(longDesc);
+                item.SetName(item.name);
+                item.SetShortDescription(shortDesc);
+                item.SetLongDescription(longDesc);
 
-            Gungeon.Game.Items.Add(idPool + ":" + item.name.ToLower().Replace(" ", "_"), item);
-            ETGMod.Databases.Items.Add(item);
+                if (item is PlayerItem)
+                    (item as PlayerItem).consumable = false;
+                Gungeon.Game.Items.Add(idPool + ":" + item.name.ToLower().Replace(" ", "_"), item);
+                ETGMod.Databases.Items.Add(item);
+            }
+            catch (Exception e)
+            {
+                ETGModConsole.Log(e.Message);
+                ETGModConsole.Log(e.StackTrace);
+            }
         }
 
         /// <summary>
@@ -109,6 +129,54 @@ namespace ItemAPI
             {
                 throw new NotSupportedException("Object must be of type PlayerItem or PassiveItem");
             }
+        }
+
+        /// <summary>
+        /// Disables the use item while the item cooldown bar runs out, then
+        /// calls the OnFinish() action. Good for items like stuffed star
+        /// with effect duration.
+        /// Call with a Coroutine   
+        /// </summary>
+        /// <param name="OnFinish">A method group with a PlayerController parameter</param>
+        public static IEnumerator HandleDuration(PlayerItem item, float duration, PlayerController user, Action<PlayerController> OnFinish)
+        {
+            if (item.IsCurrentlyActive)
+            {
+                yield break;
+            }
+
+            SetPrivateType<PlayerItem>(item, "m_isCurrentlyActive", true);
+            SetPrivateType<PlayerItem>(item, "m_activeElapsed", 0f);
+            SetPrivateType<PlayerItem>(item, "m_activeDuration", duration);
+            item.OnActivationStatusChanged?.Invoke(item);
+
+            while (GetPrivateType<PlayerItem, float>(item, "m_activeElapsed") < GetPrivateType<PlayerItem, float>(item, "m_activeDuration") && item.IsCurrentlyActive)
+            {
+                yield return null;
+            }
+            SetPrivateType<PlayerItem>(item, "m_isCurrentlyActive", false);
+            item.OnActivationStatusChanged?.Invoke(item);
+
+            OnFinish?.Invoke(user);
+            yield break;
+        }
+
+        private static void SetPrivateType<T>(T obj, string field, bool value)
+        {
+            FieldInfo f = typeof(T).GetField(field, BindingFlags.NonPublic | BindingFlags.Instance);
+            f.SetValue(obj, value);
+        }
+
+        private static void SetPrivateType<T>(T obj, string field, float value)
+        {
+            FieldInfo f = typeof(T).GetField(field, BindingFlags.NonPublic | BindingFlags.Instance);
+            f.SetValue(obj, value);
+        }
+
+        private static T2 GetPrivateType<T, T2>(T obj, string field)
+        {
+            FieldInfo f = typeof(T).GetField(field, BindingFlags.NonPublic | BindingFlags.Instance);
+            return (T2)f.GetValue(obj);
         }
     }
 }

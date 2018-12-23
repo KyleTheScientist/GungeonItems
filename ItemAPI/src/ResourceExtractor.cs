@@ -12,7 +12,7 @@ namespace ItemAPI
 {
     public static class ResourceExtractor
     {
-        readonly static string spritesDirectory = Path.Combine(ETGMod.ResourcesDirectory, "sprites");
+        private static string spritesDirectory = Path.Combine(ETGMod.ResourcesDirectory, "sprites");
         private static Assembly baseAssembly;
         /// <summary>
         /// Converts all png's in a folder to a list of Texture2D objects
@@ -38,6 +38,7 @@ namespace ItemAPI
         /// </summary>
         public static Texture2D GetTextureFromFile(string fileName)
         {
+            fileName = fileName.Replace(".png", "");
             string filePath = Path.Combine(spritesDirectory, fileName + ".png");
             if (!File.Exists(filePath))
             {
@@ -150,7 +151,7 @@ namespace ItemAPI
         /// </summary>
         public static string[] GetResourceNames()
         {
-            if(baseAssembly == null)
+            if (baseAssembly == null)
             {
                 throw new NullReferenceException("Assembly not set! Did you call ItemBuilder.Init() ?");
             }
@@ -172,6 +173,5 @@ namespace ItemAPI
         {
             baseAssembly = t.Assembly;
         }
-
     }
 }

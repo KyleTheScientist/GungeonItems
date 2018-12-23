@@ -51,6 +51,7 @@ namespace ItemAPI
 
             int id = AddSpriteToCollection(spriteName, itemCollection);
             sprite.SetSprite(itemCollection, id);
+            sprite.SortingOrder = 0;
             return obj;
         }
 
@@ -99,11 +100,11 @@ namespace ItemAPI
         /// Constructs a new tk2dSpriteDefinition with the given texture
         /// </summary>
         /// <returns>A new sprite definition with the given texture</returns>
-        private static tk2dSpriteDefinition ConstructDefinition(Texture2D texture)
+        public static tk2dSpriteDefinition ConstructDefinition(Texture2D texture)
         {
             RuntimeAtlasSegment ras = ETGMod.Assets.Packer.Pack(texture); //pack your resources beforehand or the outlines will turn out weird
             
-            Material material = new Material(ETGMod.Assets.DefaultSpriteShader);
+            Material material = new Material(Shader.Find("tk2d/BlendVertexColor"));
             material.mainTexture = ras.texture;
             //material.mainTexture = texture;
 
@@ -155,7 +156,43 @@ namespace ItemAPI
                 untrimmedBoundsDataCenter = new Vector3(w / 2f, h / 2f, 0f),
                 untrimmedBoundsDataExtents = new Vector3(w, h, 0f),
             };
+
+            def.name = texture.name;
             return def;
+        }
+
+        public static tk2dSpriteCollectionData ConstructCollection(GameObject TargetGameObject, string name)
+        {
+            var collection = TargetGameObject.AddComponent<tk2dSpriteCollectionData>();
+            UnityEngine.Object.DontDestroyOnLoad(collection);
+
+            collection.assetName = name;
+            collection.allowMultipleAtlases = false;
+            collection.buildKey = 0x0ade;
+            collection.dataGuid = "what even is this for";
+            collection.spriteCollectionGUID = name;
+            collection.spriteCollectionName = name;
+
+            /*
+            var material_arr = new Material[Textures.Length];
+
+            for (int i = 0; i < Textures.Length; i++)
+            {
+                material_arr[i] = new Material(DefaultSpriteShader);
+                material_arr[i].mainTexture = Textures[i];
+            }
+
+            collection.textures = Textures;
+            collection.textureInsts = Textures;
+
+            collection.materials = material_arr;
+            collection.materialInsts = material_arr;
+
+            collection.needMaterialInstance = false;
+            collection.spriteDefinitions = ConstructDefinitions(material_arr);
+            */
+
+            return collection;
         }
 
         /*
