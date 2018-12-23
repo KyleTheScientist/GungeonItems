@@ -12,6 +12,7 @@ Because of the way Mod the Gungeon loads external libraries, for now, you'll jus
 ### Prerequisites
 
 .NET framework 2.0 or higher
+A reference to Mod The Gungeon, UnityEngine, and Enter The Gungeon dll's
 
 ## Usage
 
