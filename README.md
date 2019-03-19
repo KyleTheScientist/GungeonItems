@@ -16,7 +16,8 @@ A reference to Mod The Gungeon, UnityEngine, and Enter The Gungeon dll's
 
 ## Usage
 
-The solution contains an example active and passive
+The solution contains an example active and passive.
+
 Here's an example of a class that implements a custom active 
 
 ```csharp
