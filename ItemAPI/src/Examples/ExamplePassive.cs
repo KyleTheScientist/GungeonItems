@@ -23,7 +23,6 @@ namespace ItemAPI
             //Generate a new GameObject with a sprite component
             ItemBuilder.AddSpriteToObject(obj, itemName, resourceName);
 
-
             //Ammonomicon entry variables
             string shortDesc = "Show 'em Who's Boss";
             string longDesc = "Greatly increases damage dealt to bosses.\n\n" +
