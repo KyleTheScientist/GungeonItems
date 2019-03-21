@@ -33,11 +33,14 @@ class BloodyShield : PlayerItem
         //Refers to an icon embedded as a PNG in the project. Make sure to embed your resources!
         string resourceName = "CustomItems/Resources/armor_shield_heart_idle_001";
 
-        //Generate a new GameObject with a sprite component
-        GameObject spriteObj = ItemBuilder.CreateSpriteObject(itemName, resourceName);
+        //Create new GameObject
+        GameObject obj = new GameObject();
 
-        //Add an ActiveItem component to the object. This can be another class, or you can implement it here.
-        BloodyShield item = spriteObj.AddComponent<BloodyShield>();
+        //Add a ActiveItem component to the object
+        var item = obj.AddComponent<BloodyShield>();
+
+        //Generate a new GameObject with a sprite component
+        ItemBuilder.AddSpriteToObject(obj, itemName, resourceName);
 
         //Ammonomicon entry variables
         string shortDesc = "Iron from Blood";
