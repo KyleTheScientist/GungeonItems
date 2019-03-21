@@ -40,9 +40,9 @@ namespace ItemAPI
         /// Creates an object with a sprite component and adds that sprite to the 
         /// ammonomicon for later use.
         /// </summary>
-        public static GameObject CreateSpriteObject(string name, string resourcePath)
+        public static GameObject AddSpriteToObject(GameObject obj, string name, string resourcePath)
         {
-            GameObject spriteObject = SpriteBuilder.SpriteFromResource(resourcePath);
+            GameObject spriteObject = SpriteBuilder.SpriteFromResource(obj, resourcePath);
             spriteObject.name = name;
             return spriteObject;
         }
@@ -55,17 +55,20 @@ namespace ItemAPI
         {
             try
             {
-                ETGMod.Databases.Items.SetupItem(item, item.name);
+                item.encounterTrackable = null;
+                ETGModConsole.Log("ID:" + item.sprite.name);
 
+                ETGMod.Databases.Items.SetupItem(item, item.name);
                 SpriteBuilder.AddToAmmonomicon(item.sprite.GetCurrentSpriteDef());
+                ETGModConsole.Log(item.sprite.GetCurrentSpriteDef().name);
                 item.encounterTrackable.journalData.AmmonomiconSprite = item.sprite.GetCurrentSpriteDef().name;
 
                 item.SetName(item.name);
                 item.SetShortDescription(shortDesc);
                 item.SetLongDescription(longDesc);
 
-                if (item is PlayerItem)
-                    (item as PlayerItem).consumable = false;
+                if(item is PlayerItem)
+                (item as PlayerItem).consumable = false;
                 Gungeon.Game.Items.Add(idPool + ":" + item.name.ToLower().Replace(" ", "_"), item);
                 ETGMod.Databases.Items.Add(item);
             }
@@ -131,13 +134,6 @@ namespace ItemAPI
             }
         }
 
-        /// <summary>
-        /// Disables the use item while the item cooldown bar runs out, then
-        /// calls the OnFinish() action. Good for items like stuffed star
-        /// with effect duration.
-        /// Call with a Coroutine   
-        /// </summary>
-        /// <param name="OnFinish">A method group with a PlayerController parameter</param>
         public static IEnumerator HandleDuration(PlayerItem item, float duration, PlayerController user, Action<PlayerController> OnFinish)
         {
             if (item.IsCurrentlyActive)
@@ -149,6 +145,9 @@ namespace ItemAPI
             SetPrivateType<PlayerItem>(item, "m_activeElapsed", 0f);
             SetPrivateType<PlayerItem>(item, "m_activeDuration", duration);
             item.OnActivationStatusChanged?.Invoke(item);
+
+            float elapsed = GetPrivateType<PlayerItem, float>(item, "m_activeElapsed");
+            float dur = GetPrivateType<PlayerItem, float>(item, "m_activeDuration");
 
             while (GetPrivateType<PlayerItem, float>(item, "m_activeElapsed") < GetPrivateType<PlayerItem, float>(item, "m_activeDuration") && item.IsCurrentlyActive)
             {
