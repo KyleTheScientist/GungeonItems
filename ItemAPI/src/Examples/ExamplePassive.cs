@@ -14,11 +14,15 @@ namespace ItemAPI
             string itemName = "Boss Bullets"; //The name of the item
             string resourceName = "ItemAPI/Resources/boss_bullets_icon"; //Refers to an embedded png in the project. Make sure to embed your resources!
 
-            //Generate a new GameObject with a sprite component
-            GameObject spriteObj = ItemBuilder.CreateSpriteObject(itemName, resourceName);
+           //Create new GameObject
+            GameObject obj = new GameObject();
 
-            //Add a PassiveItem component to the object
-            PassiveItem item = spriteObj.AddComponent<PassiveItem>();
+            //Add a ActiveItem component to the object
+            var item = obj.AddComponent<PassiveItem>();
+
+            //Generate a new GameObject with a sprite component
+            ItemBuilder.AddSpriteToObject(obj, itemName, resourceName);
+
 
             //Ammonomicon entry variables
             string shortDesc = "Show 'em Who's Boss";
