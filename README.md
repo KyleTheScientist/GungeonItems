@@ -8,6 +8,8 @@ Because of the way Mod the Gungeon loads external libraries, for now, you'll jus
 - ItemBuilder.cs
 - SpriteBuilder.cs
 - ResourceExtractor.cs
+- FakePrefab.cs
+- FakePrefabHooks.cs
 
 ### Prerequisites
 
@@ -23,45 +25,47 @@ Here's an example of a class that implements a custom active
 ```csharp
 //using ItemAPI;
 
-class BloodyShield : PlayerItem
+class BloodShield : PlayerItem
 {
     public static void Init()
     {
         //The name of the item
-        string itemName = "Bloody Shield"; 
-            
-        //Refers to an icon embedded as a PNG in the project. Make sure to embed your resources!
+        string itemName = "Blood Shield";
+
+        //Refers to an embedded png in the project. Make sure to embed your resources!
         string resourceName = "CustomItems/Resources/armor_shield_heart_idle_001";
 
         //Create new GameObject
         GameObject obj = new GameObject();
 
         //Add a ActiveItem component to the object
-        var item = obj.AddComponent<BloodyShield>();
+        var item = obj.AddComponent<BloodShield>();
 
-        //Generate a new GameObject with a sprite component
-        ItemBuilder.AddSpriteToObject(obj, itemName, resourceName);
+        //Adds a tk2dSprite component to the object and adds your texture to the item sprite collection
+        ItemBuilder.AddSpriteToObject(itemName, resourceName, obj);
 
         //Ammonomicon entry variables
         string shortDesc = "Iron from Blood";
-        string longDesc = "Trades hearts for armor.";
+        string longDesc = "Trades hearts for armor.\n\n" +
+            "For carbon-based species, blood naturally contains hemoglobin, a molecule composed of " +
+            "iron and heme groups. This item collects that iron from your blood and forges it into armor.\n\n" +
+            "Approved by 100% of all doctors everywhere!";
+
+        //Adds the item to the gungeon item list, the ammonomicon, the loot table, etc.
+        //"example_pool" here is the item pool. In the console you'd type "give example_pool:sweating_bullets"
+        ItemBuilder.SetupItem(item, shortDesc, longDesc, "example_pool");
 
         //Set the cooldown type and duration of the cooldown
         ItemBuilder.SetCooldownType(item, ItemBuilder.CooldownType.Timed, 1.5f);
 
         //Adds a passive modifier, like curse, coolness, damage, etc. to the item. Works for passives and actives.
-        ItemBuilder.AddPassiveStatModifier(item, PlayerStats.StatType.Curse, 1);
+        //ItemBuilder.AddPassiveStatModifier(item, PlayerStats.StatType.Curse, 1);
 
         //Set some other fields
         item.consumable = false;
         item.quality = ItemQuality.B;
-        
-        //Adds the item to the gungeon item list, the ammonomicon, the loot table, etc. Really makes it official!
-        ItemBuilder.SetupItem(item, shortDesc, longDesc, "kts");
     }
-    
-    //Item Functionality (This can go in another class, or you can just do it here.)
-    
+
     //Removes one heart from the player, gives them 1 armor
     protected override void DoEffect(PlayerController user)
     {
@@ -86,6 +90,7 @@ class BloodyShield : PlayerItem
 and in the main module call
 ```csharp
 void Start() {
+   FakePrefabHooks.Init() //This prevents 
    ItemBuilder.Init(); //This needs to be called to be able to use embedded resources
    BloodyShield.Init(); //Builds the item
 }
