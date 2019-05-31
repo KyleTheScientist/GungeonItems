@@ -17,21 +17,21 @@ namespace ItemAPI
         /// Returns an object with a tk2dSprite component with the 
         /// texture of a file in the sprites folder
         /// </summary>
-        public static GameObject SpriteFromFile(GameObject obj, string spriteName)
+        public static GameObject SpriteFromFile(string spriteName, GameObject obj = null, bool copyFromExisting = true)
         {
             string filename = spriteName.Replace(".png", "");
 
             var texture = ResourceExtractor.GetTextureFromFile(filename);
             if (texture == null) return null;
 
-            return SpriteFromTexture(obj, texture, spriteName);
+            return SpriteFromTexture(texture, spriteName, obj, copyFromExisting);
         }
 
         /// <summary>
         /// Returns an object with a tk2dSprite component with the 
         /// texture of an embedded resource
         /// </summary>
-        public static GameObject SpriteFromResource(GameObject obj, string spriteName)
+        public static GameObject SpriteFromResource(string spriteName, GameObject obj = null, bool copyFromExisting = true)
         {
             string extension = !spriteName.EndsWith(".png") ? ".png" : "";
             string resourcePath = spriteName + extension;
@@ -39,23 +39,31 @@ namespace ItemAPI
             var texture = ResourceExtractor.GetTextureFromResource(resourcePath);
             if (texture == null) return null;
 
-            return SpriteFromTexture(obj, texture, resourcePath);
+            return SpriteFromTexture(texture, resourcePath, obj, copyFromExisting);
         }
 
         /// <summary>
         /// Returns an object with a tk2dSprite component with the texture provided
         /// </summary>
-        public static GameObject SpriteFromTexture(GameObject obj, Texture2D texture, string spriteName)
+        public static GameObject SpriteFromTexture(Texture2D texture, string spriteName, GameObject obj = null, bool copyFromExisting = true)
         {
-            tk2dSprite sprite = obj.AddComponent<tk2dSprite>(baseSprite);
+            if (obj == null)
+            {
+                obj = new GameObject();
+            }
+            tk2dSprite sprite;
+            if (copyFromExisting)
+                sprite = obj.AddComponent<tk2dSprite>(baseSprite);
+            else
+                sprite = obj.AddComponent<tk2dSprite>();
 
             int id = AddSpriteToCollection(spriteName, itemCollection);
             sprite.SetSprite(itemCollection, id);
-            sprite.spriteId = id;
             sprite.SortingOrder = 0;
-            sprite.ForceBuild();
 
             obj.GetComponent<BraveBehaviour>().sprite = sprite;
+            FakePrefab.MarkAsFakePrefab(obj);
+            obj.SetActive(false);
 
             return obj;
         }

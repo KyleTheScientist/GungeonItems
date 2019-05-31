@@ -37,12 +37,12 @@ namespace ItemAPI
         }
 
         /// <summary>
-        /// Creates an object with a sprite component and adds that sprite to the 
-        /// ammonomicon for later use.
+        /// Adds a tk2dSprite component to an object and adds that sprite to the 
+        /// ammonomicon for later use. If obj is null, returns a new GameObject with the sprite
         /// </summary>
-        public static GameObject AddSpriteToObject(GameObject obj, string name, string resourcePath)
+        public static GameObject AddSpriteToObject(string name, string resourcePath, GameObject obj = null, bool copyFromExisting = true)
         {
-            GameObject spriteObject = SpriteBuilder.SpriteFromResource(obj, resourcePath);
+            GameObject spriteObject = SpriteBuilder.SpriteFromResource(resourcePath, obj, copyFromExisting);
             spriteObject.name = name;
             return spriteObject;
         }
@@ -51,24 +51,22 @@ namespace ItemAPI
         /// Finishes the item setup, adds it to the item databases, adds an encounter trackable 
         /// blah, blah, blah
         /// </summary>
-        public static void SetupItem(PickupObject item, string shortDesc, string longDesc, string idPool = "customItems")
+        public static void SetupItem(PickupObject item, string shortDesc, string longDesc, string idPool)
         {
             try
             {
                 item.encounterTrackable = null;
-                ETGModConsole.Log("ID:" + item.sprite.name);
 
                 ETGMod.Databases.Items.SetupItem(item, item.name);
                 SpriteBuilder.AddToAmmonomicon(item.sprite.GetCurrentSpriteDef());
-                ETGModConsole.Log(item.sprite.GetCurrentSpriteDef().name);
                 item.encounterTrackable.journalData.AmmonomiconSprite = item.sprite.GetCurrentSpriteDef().name;
 
                 item.SetName(item.name);
                 item.SetShortDescription(shortDesc);
                 item.SetLongDescription(longDesc);
 
-                if(item is PlayerItem)
-                (item as PlayerItem).consumable = false;
+                if (item is PlayerItem)
+                    (item as PlayerItem).consumable = false;
                 Gungeon.Game.Items.Add(idPool + ":" + item.name.ToLower().Replace(" ", "_"), item);
                 ETGMod.Databases.Items.Add(item);
             }

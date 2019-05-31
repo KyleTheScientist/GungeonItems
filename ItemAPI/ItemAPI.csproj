@@ -36,6 +36,9 @@
     <Reference Include="Assembly-CSharp.Base.mm">
       <HintPath>..\..\..\..\..\Desktop\Code stuff\Mod The Gungeon\Gungeon\Dependencies\Assembly-CSharp.Base.mm.dll</HintPath>
     </Reference>
+    <Reference Include="MonoMod.RuntimeDetour">
+      <HintPath>..\..\..\..\..\Desktop\Code stuff\Mod The Gungeon\Gungeon\Dependencies\MonoMod.RuntimeDetour.dll</HintPath>
+    </Reference>
     <Reference Include="MonoMod.Utils">
       <HintPath>..\..\..\..\..\Desktop\Code stuff\Mod The Gungeon\Gungeon\Dependencies\MonoMod.Utils.dll</HintPath>
     </Reference>
@@ -62,10 +65,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\ItemBuilder.cs" />
-    <Compile Include="src\Examples\ExampleActive.cs" />
     <Compile Include="src\Examples\ExamplePassive.cs" />
+    <Compile Include="src\Examples\ExampleActive.cs" />
+    <Compile Include="src\FakePrefab\FakePrefab.cs" />
+    <Compile Include="src\FakePrefab\FakePrefabHooks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="src\ItemBuilder.cs" />
     <Compile Include="src\ResourceExtractor.cs" />
     <Compile Include="src\SpriteBuilder.cs" />
   </ItemGroup>
