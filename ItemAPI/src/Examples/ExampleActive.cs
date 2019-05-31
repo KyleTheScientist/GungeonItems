@@ -22,11 +22,22 @@ namespace ItemAPI
             //Create new GameObject
             GameObject obj = new GameObject(itemName);
 
+<<<<<<< HEAD
             //Add a ActiveItem component to the object
             var item = obj.AddComponent<ExampleActive>();
 
             //Adds a tk2dSprite component to the object and adds your texture to the item sprite collection
             ItemBuilder.AddSpriteToObject(itemName, resourceName, obj);
+=======
+            //Create new GameObject
+            GameObject obj = new GameObject();
+
+            //Add a ActiveItem component to the object
+            var item = obj.AddComponent<ExampleActive>();
+
+            //Generate a new GameObject with a sprite component
+            ItemBuilder.AddSpriteToObject(obj, itemName, resourceName);
+>>>>>>> 668c213324f79416f0fc25558dff266bb1195414
 
             //Ammonomicon entry variables
             string shortDesc = "Is it Hot in Here?";
