@@ -28,15 +28,6 @@ namespace ItemAPI
             //Adds a tk2dSprite component to the object and adds your texture to the item sprite collection
             ItemBuilder.AddSpriteToObject(itemName, resourceName, obj);
 
-            //Create new GameObject
-            GameObject obj = new GameObject();
-
-            //Add a ActiveItem component to the object
-            var item = obj.AddComponent<ExampleActive>();
-
-            //Generate a new GameObject with a sprite component
-            ItemBuilder.AddSpriteToObject(obj, itemName, resourceName);
-
             //Ammonomicon entry variables
             string shortDesc = "Is it Hot in Here?";
             string longDesc = "While active, triples bullet damage, but reduces health to 1 hit. \n\nDon't get nervous!";

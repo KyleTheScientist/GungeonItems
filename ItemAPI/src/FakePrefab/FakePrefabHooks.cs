@@ -14,6 +14,13 @@ namespace ItemAPI
     {
         public static void Init()
         {
+            //Since for some reason generic method hooks don't want to work. Hopefully this is the only other 
+            //way to get items!
+            Hook silentItemAcquireHook = new Hook(
+                typeof(PlayerController).GetMethod("AcquirePassiveItemPrefabDirectly"),
+                typeof(FakePrefabHooks).GetMethod("AcquirePassiveItemPrefabDirectly")
+            );
+
             Hook instantiateOPI = new Hook(
                 typeof(Object).GetMethod("Instantiate", new Type[]{
                     typeof(Object),
@@ -56,6 +63,12 @@ namespace ItemAPI
                 }),
                 typeof(FakePrefabHooks).GetMethod("InstantiateOPRP")
             );
+        }
+
+        public static void AcquirePassiveItemPrefabDirectly(Action<PlayerController, PassiveItem> orig, PlayerController self, PassiveItem item)
+        {
+            item.gameObject.SetActive(true);
+            orig(self, item);
         }
 
         public static Object InstantiateOPI(Func<Object, Transform, bool, Object> orig, Object original, Transform parent, bool instantiateInWorldSpace)
