@@ -16,7 +16,7 @@ namespace ItemAPI
             //The name of the item
             string itemName = "Sweating Bullets";
             
-            //Refers to an embedded png in the project. Make sure to embed your resources!
+            //Refers to an embedded png in the project. Make sure to embed your resources! Google it.
             string resourceName = "CustomItems/Resources/sweating_bullets_icon"; 
 
             //Create new GameObject
