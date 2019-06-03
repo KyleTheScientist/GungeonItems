@@ -67,7 +67,8 @@ namespace ItemAPI
 
         public static void AcquirePassiveItemPrefabDirectly(Action<PlayerController, PassiveItem> orig, PlayerController self, PassiveItem item)
         {
-            item.gameObject.SetActive(true);
+            if (FakePrefab.IsFakePrefab(item.gameObject))
+                item.gameObject.SetActive(true);
             orig(self, item);
         }
 
