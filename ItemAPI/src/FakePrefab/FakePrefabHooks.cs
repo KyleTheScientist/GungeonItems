@@ -67,9 +67,12 @@ namespace ItemAPI
 
         public static void AcquirePassiveItemPrefabDirectly(Action<PlayerController, PassiveItem> orig, PlayerController self, PassiveItem item)
         {
-            if (FakePrefab.IsFakePrefab(item.gameObject))
+            bool isFake = FakePrefab.IsFakePrefab(item.gameObject);
+            if (isFake)
                 item.gameObject.SetActive(true);
             orig(self, item);
+            if (isFake)
+                item.gameObject.SetActive(false);
         }
 
         public static Object InstantiateOPI(Func<Object, Transform, bool, Object> orig, Object original, Transform parent, bool instantiateInWorldSpace)
