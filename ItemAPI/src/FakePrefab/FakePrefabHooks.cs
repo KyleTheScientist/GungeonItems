@@ -14,11 +14,16 @@ namespace ItemAPI
     {
         public static void Init()
         {
-            //Since for some reason generic method hooks don't want to work. Hopefully this is the only other 
-            //way to get items!
+            //Since for some reason generic method hooks don't want to work. Hopefully this is the only other way to get items!
             Hook silentItemAcquireHook = new Hook(
                 typeof(PlayerController).GetMethod("AcquirePassiveItemPrefabDirectly"),
                 typeof(FakePrefabHooks).GetMethod("AcquirePassiveItemPrefabDirectly")
+            );
+
+            //Same deal but for passives
+            Hook activePickupHook = new Hook(
+                typeof(PlayerItem).GetMethod("Pickup"),
+                typeof(FakePrefabHooks).GetMethod("ActivePickup")
             );
 
             Hook instantiateOPI = new Hook(
@@ -70,9 +75,23 @@ namespace ItemAPI
             bool isFake = FakePrefab.IsFakePrefab(item.gameObject);
             if (isFake)
                 item.gameObject.SetActive(true);
+
             orig(self, item);
+
             if (isFake)
                 item.gameObject.SetActive(false);
+        }
+
+        public static void ActivePickup(Action<PlayerItem, PlayerController> orig, PlayerItem self, PlayerController player)
+        {
+            bool isFake = FakePrefab.IsFakePrefab(self.gameObject);
+            if (isFake)
+                self.gameObject.SetActive(true);
+
+            orig(self, player);
+
+            if (isFake)
+                self.gameObject.SetActive(false);
         }
 
         public static Object InstantiateOPI(Func<Object, Transform, bool, Object> orig, Object original, Transform parent, bool instantiateInWorldSpace)
