@@ -5,6 +5,7 @@ using System.Text;
 using System.Reflection;
 using UnityEngine;
 
+using CustomItems;
 namespace ItemAPI
 {
     public static class SpriteBuilder
@@ -17,21 +18,21 @@ namespace ItemAPI
         /// Returns an object with a tk2dSprite component with the 
         /// texture of a file in the sprites folder
         /// </summary>
-        public static GameObject SpriteFromFile(string spriteName, GameObject obj = null, bool copyFromExisting = false)
+        public static GameObject SpriteFromFile(string spriteName, GameObject obj = null)
         {
             string filename = spriteName.Replace(".png", "");
 
             var texture = ResourceExtractor.GetTextureFromFile(filename);
             if (texture == null) return null;
 
-            return SpriteFromTexture(texture, spriteName, obj, copyFromExisting);
+            return SpriteFromTexture(texture, spriteName, obj);
         }
 
         /// <summary>
         /// Returns an object with a tk2dSprite component with the 
         /// texture of an embedded resource
         /// </summary>
-        public static GameObject SpriteFromResource(string spriteName, GameObject obj = null, bool copyFromExisting = false)
+        public static GameObject SpriteFromResource(string spriteName, GameObject obj = null)
         {
             string extension = !spriteName.EndsWith(".png") ? ".png" : "";
             string resourcePath = spriteName + extension;
@@ -39,23 +40,20 @@ namespace ItemAPI
             var texture = ResourceExtractor.GetTextureFromResource(resourcePath);
             if (texture == null) return null;
 
-            return SpriteFromTexture(texture, resourcePath, obj, copyFromExisting);
+            return SpriteFromTexture(texture, resourcePath, obj);
         }
 
         /// <summary>
         /// Returns an object with a tk2dSprite component with the texture provided
         /// </summary>
-        public static GameObject SpriteFromTexture(Texture2D texture, string spriteName, GameObject obj = null, bool copyFromExisting = false)
+        public static GameObject SpriteFromTexture(Texture2D texture, string spriteName, GameObject obj = null)
         {
             if (obj == null)
             {
                 obj = new GameObject();
             }
             tk2dSprite sprite;
-            if (copyFromExisting)
-                sprite = obj.AddComponent<tk2dSprite>(baseSprite);
-            else
-                sprite = obj.AddComponent<tk2dSprite>();
+            sprite = obj.AddComponent<tk2dSprite>();
 
             int id = AddSpriteToCollection(spriteName, itemCollection);
             sprite.SetSprite(itemCollection, id);
@@ -63,8 +61,6 @@ namespace ItemAPI
             sprite.IsPerpendicular = true;
 
             obj.GetComponent<BraveBehaviour>().sprite = sprite;
-            FakePrefab.MarkAsFakePrefab(obj);
-            obj.SetActive(false);
 
             return obj;
         }
@@ -112,6 +108,59 @@ namespace ItemAPI
             return AddSpriteToCollection(spriteDefinition, ammonomiconCollection);
         }
 
+        public static tk2dSpriteAnimationClip AddAnimation(tk2dSpriteAnimator animator, tk2dSpriteCollectionData collection, List<int> spriteIDs,
+            string clipName, tk2dSpriteAnimationClip.WrapMode wrapMode = tk2dSpriteAnimationClip.WrapMode.Loop)
+        {
+            if (animator.Library == null)
+            {
+                animator.Library = animator.gameObject.AddComponent<tk2dSpriteAnimation>();
+                animator.Library.clips = new tk2dSpriteAnimationClip[0];
+                animator.Library.enabled = true;
+
+            }
+
+            List<tk2dSpriteAnimationFrame> frames = new List<tk2dSpriteAnimationFrame>();
+            for (int i = 0; i < spriteIDs.Count; i++)
+            {
+                tk2dSpriteDefinition sprite = collection.spriteDefinitions[spriteIDs[i]];
+                if (sprite.Valid)
+                {
+                    frames.Add(new tk2dSpriteAnimationFrame()
+                    {
+                        spriteCollection = collection,
+                        spriteId = spriteIDs[i]
+                    });
+                }
+            }
+
+            var clip = new tk2dSpriteAnimationClip();
+            clip.name = clipName;
+            clip.fps = 15;
+            clip.wrapMode = wrapMode;
+            Array.Resize(ref animator.Library.clips, animator.Library.clips.Length + 1);
+            animator.Library.clips[animator.Library.clips.Length - 1] = clip;
+
+            clip.frames = frames.ToArray();
+            return clip;
+        }
+
+        public static SpeculativeRigidbody SetUpSpeculativeRigidbody(this tk2dSprite sprite, IntVector2 offset, IntVector2 dimensions)
+        {
+            var body = sprite.gameObject.GetOrAddComponent<SpeculativeRigidbody>();
+            PixelCollider collider = new PixelCollider();
+            collider.ColliderGenerationMode = PixelCollider.PixelColliderGeneration.Manual;
+            collider.CollisionLayer = CollisionLayer.EnemyCollider;
+
+            collider.ManualWidth = dimensions.x;
+            collider.ManualHeight = dimensions.y;
+            collider.ManualOffsetX = offset.x;
+            collider.ManualOffsetY = offset.y;
+
+            body.PixelColliders = new List<PixelCollider>() { collider };
+
+            return body;
+        }
+
         /// <summary>
         /// Constructs a new tk2dSpriteDefinition with the given texture
         /// </summary>
@@ -120,7 +169,7 @@ namespace ItemAPI
         {
             RuntimeAtlasSegment ras = ETGMod.Assets.Packer.Pack(texture); //pack your resources beforehand or the outlines will turn out weird
 
-            Material material = new Material(Shader.Find("tk2d/BlendVertexColor"));
+            Material material = new Material(ShaderCache.Acquire(PlayerController.DefaultShaderName));
             material.mainTexture = ras.texture;
             //material.mainTexture = texture;
 
@@ -177,52 +226,32 @@ namespace ItemAPI
             return def;
         }
 
-        public static tk2dSpriteCollectionData ConstructCollection(string name)
+        public static tk2dSpriteCollectionData ConstructCollection(GameObject obj, string name)
         {
-            var collection = new tk2dSpriteCollectionData();
+            var collection = obj.AddComponent<tk2dSpriteCollectionData>();
             UnityEngine.Object.DontDestroyOnLoad(collection);
 
             collection.assetName = name;
-            collection.allowMultipleAtlases = false;
-            collection.buildKey = 0x0ade;
-            collection.dataGuid = "what even is this for";
             collection.spriteCollectionGUID = name;
             collection.spriteCollectionName = name;
             collection.spriteDefinitions = new tk2dSpriteDefinition[0];
-            /*
-            var material_arr = new Material[Textures.Length];
-
-            for (int i = 0; i < Textures.Length; i++)
-            {
-                material_arr[i] = new Material(DefaultSpriteShader);
-                material_arr[i].mainTexture = Textures[i];
-            }
-
-            collection.textures = Textures;
-            collection.textureInsts = Textures;
-
-            collection.materials = material_arr;
-            collection.materialInsts = material_arr;
-
-            collection.needMaterialInstance = false;
-            collection.spriteDefinitions = ConstructDefinitions(material_arr);
-            */
-
             return collection;
         }
 
-
-        public static T GetCopyOf<T>(this Component comp, T other) where T : Component
+        public static T CopyFrom<T>(this Component comp, T other) where T : Component
         {
             Type type = comp.GetType();
             if (type != other.GetType()) return null; // type mis-match
             PropertyInfo[] pinfos = type.GetProperties();
+            //CustomItems.Tools.Print($"{typeof(T)} + Properties: ");
             foreach (var pinfo in pinfos)
             {
                 if (pinfo.CanWrite)
                 {
                     try
                     {
+
+                        //CustomItems.Tools.Print($"  {pinfo.Name}: {pinfo.GetValue(other, null)}");
                         pinfo.SetValue(comp, pinfo.GetValue(other, null), null);
                     }
                     catch { } // In case of NotImplementedException being thrown. For some reason specifying that exception didn't seem to catch it, so I didn't catch anything specific.
@@ -231,9 +260,12 @@ namespace ItemAPI
                 {
                 }
             }
+            //CustomItems.Tools.Print($"{typeof(T)} + Fields: ");
+
             FieldInfo[] finfos = type.GetFields();
             foreach (var finfo in finfos)
             {
+                //CustomItems.Tools.Print($"  {finfo.Name}: {finfo.GetValue(other)}");
                 finfo.SetValue(comp, finfo.GetValue(other));
             }
             return comp as T;
@@ -241,7 +273,7 @@ namespace ItemAPI
 
         public static T AddComponent<T>(this GameObject go, T toAdd) where T : Component
         {
-            return go.AddComponent<T>().GetCopyOf(toAdd) as T;
+            return go.AddComponent<T>().CopyFrom(toAdd) as T;
         }
 
         /*
