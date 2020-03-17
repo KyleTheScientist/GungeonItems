@@ -65,6 +65,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\CompanionBuilder.cs" />
+    <Compile Include="src\Examples\ExampleCompanion.cs" />
     <Compile Include="src\Examples\ExamplePassive.cs" />
     <Compile Include="src\Examples\ExampleActive.cs" />
     <Compile Include="src\FakePrefab\FakePrefab.cs" />
@@ -78,6 +80,14 @@
     <EmbeddedResource Include="Resources\boss_bullets_icon.png" />
     <EmbeddedResource Include="Resources\reggie_icon.png" />
     <EmbeddedResource Include="Resources\sweating_bullets_icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\blob\blob_001.png" />
+    <EmbeddedResource Include="Resources\blob\blob_002.png" />
+    <EmbeddedResource Include="Resources\blob\blob_003.png" />
+    <EmbeddedResource Include="Resources\blob\blob_004.png" />
+    <EmbeddedResource Include="Resources\blob\blob_005.png" />
+    <EmbeddedResource Include="Resources\blob\blob_006.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
