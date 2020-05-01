@@ -11,7 +11,7 @@ using FullInspector;
 using System.Collections;
 
 using Random = UnityEngine.Random;
-namespace CustomItems
+namespace ItemAPI
 {
 
     public class BabyGoodBlob : CompanionItem
@@ -22,7 +22,7 @@ namespace CustomItems
         public static void Init()
         {
             string itemName = "Baby Good Blob";
-            string resourceName = "CustomItems/Resources/P2/baby_blob";
+            string resourceName = "ItemAPI/Resources/P2/baby_blob";
 
             GameObject obj = new GameObject();
             var item = obj.AddComponent<BabyGoodBlob>();
@@ -43,12 +43,12 @@ namespace CustomItems
 
         private static string[] spritePaths = new string[]
         {
-            "CustomItems/Resources/P2/blob/blob_001",
-            "CustomItems/Resources/P2/blob/blob_002",
-            "CustomItems/Resources/P2/blob/blob_003",
-            "CustomItems/Resources/P2/blob/blob_004",
-            "CustomItems/Resources/P2/blob/blob_005",
-            "CustomItems/Resources/P2/blob/blob_006",
+            "ItemAPI/Resources/P2/blob/blob_001",
+            "ItemAPI/Resources/P2/blob/blob_002",
+            "ItemAPI/Resources/P2/blob/blob_003",
+            "ItemAPI/Resources/P2/blob/blob_004",
+            "ItemAPI/Resources/P2/blob/blob_005",
+            "ItemAPI/Resources/P2/blob/blob_006",
         };
 
         private static tk2dSpriteCollectionData blobCollection;

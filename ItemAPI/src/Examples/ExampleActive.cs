@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-using ItemAPI;
 
 namespace ItemAPI
 {
@@ -15,9 +14,9 @@ namespace ItemAPI
         {
             //The name of the item
             string itemName = "Sweating Bullets";
-            
+
             //Refers to an embedded png in the project. Make sure to embed your resources! Google it.
-            string resourceName = "CustomItems/Resources/sweating_bullets_icon"; 
+            string resourceName = "ItemAPI/Resources/sweating_bullets_icon";
 
             //Create new GameObject
             GameObject obj = new GameObject(itemName);
@@ -34,7 +33,7 @@ namespace ItemAPI
 
             //Adds the item to the gungeon item list, the ammonomicon, the loot table, etc.
             //"kts" here is the item pool. In the console you'd type kts:sweating_bullets
-            ItemBuilder.SetupItem(item, shortDesc, longDesc, "kts"); 
+            ItemBuilder.SetupItem(item, shortDesc, longDesc, "kts");
 
             //Set the cooldown type and duration of the cooldown
             ItemBuilder.SetCooldownType(item, ItemBuilder.CooldownType.Damage, 500);
@@ -45,10 +44,12 @@ namespace ItemAPI
             //Set some other fields
             item.consumable = false;
             item.quality = ItemQuality.C;
+
+            List<string> mandatorySynergyItems = new List<string>() { "kts:sweating_bullets", "hot_lead" };
+            CustomSynergies.Add("Is it hot in here?", mandatorySynergyItems);
         }
 
         //Add the item's functionality down here! I stole most of this from the Stuffed Star active item code!
-        float damageBuff = -1;
         float duration = 10f;
         protected override void DoEffect(PlayerController user)
         {
@@ -63,24 +64,29 @@ namespace ItemAPI
         }
 
         //Doubles the damage, makes the next shot kill the player, and stores the amount we buffed the player for later
+        StatModifier damageMod;
         private void StartEffect(PlayerController user)
         {
             user.healthHaver.NextShotKills = true;
-            float curDamage = user.stats.GetBaseStatValue(PlayerStats.StatType.Damage);
-            float newDamage = curDamage * 3f;
-            user.stats.SetBaseStatValue(PlayerStats.StatType.Damage, newDamage, user);
-            damageBuff = newDamage - curDamage;
+            float damageBoost = 3;
+            if (user.HasMTGConsoleID("hot_lead")) 
+                damageBoost = 4;
+            damageMod = this.AddPassiveStatModifier(PlayerStats.StatType.Damage, damageBoost, StatModifier.ModifyMethod.MULTIPLICATIVE);
+            user.stats.RecalculateStats(user, force: true, recursive: true);
         }
 
         //Resets the player back to their original stats
         private void EndEffect(PlayerController user)
         {
-            if (damageBuff <= 0) return;
+            if (damageMod == null) return;
             user.healthHaver.NextShotKills = false;
-            float curDamage = user.stats.GetBaseStatValue(PlayerStats.StatType.Damage);
-            float newDamage = curDamage - damageBuff;
-            user.stats.SetBaseStatValue(PlayerStats.StatType.Damage, newDamage, user);
-            damageBuff = -1;
+            this.RemovePassiveStatModifier(damageMod);
+        }
+
+        protected override void OnPreDrop(PlayerController user)
+        {
+            base.OnPreDrop(user);
+            EndEffect(user);
         }
 
         //Disable or enable the active whenever you need!

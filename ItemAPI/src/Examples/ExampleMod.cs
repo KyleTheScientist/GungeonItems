@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
-namespace ItemAPI.src
+using ItemAPI;
+namespace ItemAPI
 {
     class ExampleMod : ETGModule
     {

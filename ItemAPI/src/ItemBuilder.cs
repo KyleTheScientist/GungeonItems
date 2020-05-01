@@ -8,7 +8,7 @@ using System.Reflection;
 using System.IO;
 using System.Collections;
 using MonoMod.RuntimeDetour;
-using CustomItems;
+using ItemAPI;
 
 namespace ItemAPI
 {
@@ -76,7 +76,7 @@ namespace ItemAPI
         /// Finishes the item setup, adds it to the item databases, adds an encounter trackable 
         /// blah, blah, blah
         /// </summary>
-        public static void SetupItem(this PickupObject item, string shortDesc, string longDesc, string idPool = "customItems")
+        public static void SetupItem(this PickupObject item, string shortDesc, string longDesc, string idPool = "ItemAPI")
         {
             try
             {
@@ -140,7 +140,7 @@ namespace ItemAPI
         /// <summary>
         /// Adds a passive player stat modifier to a PlayerItem or PassiveItem
         /// </summary>
-        public static void AddPassiveStatModifier(this PickupObject po, PlayerStats.StatType statType, float amount, StatModifier.ModifyMethod method = StatModifier.ModifyMethod.ADDITIVE)
+        public static StatModifier AddPassiveStatModifier(this PickupObject po, PlayerStats.StatType statType, float amount, StatModifier.ModifyMethod method = StatModifier.ModifyMethod.ADDITIVE)
         {
             StatModifier modifier = new StatModifier();
             modifier.amount = amount;
@@ -148,6 +148,7 @@ namespace ItemAPI
             modifier.modifyType = method;
 
             po.AddPassiveStatModifier(modifier);
+            return modifier;
         }
 
         public static void AddPassiveStatModifier(this PickupObject po, StatModifier modifier)

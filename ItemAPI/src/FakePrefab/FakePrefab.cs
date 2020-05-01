@@ -77,7 +77,6 @@ namespace ItemAPI
         {
             if (o is GameObject && ExistingFakePrefabs.Contains((GameObject)o))
             {
-                //Tools.Print("Spawning fake prefab: " + o.name);
                 ((GameObject)new_o).SetActive(true);
             }
             else if (o is Component && ExistingFakePrefabs.Contains(((Component)o).gameObject))

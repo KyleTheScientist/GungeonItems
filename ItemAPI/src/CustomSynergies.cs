@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using MonoMod.RuntimeDetour;
 
-namespace CustomItems
+namespace ItemAPI
 {
     public static class CustomSynergies
     {

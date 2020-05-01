@@ -6,7 +6,6 @@ using System.Text;
 
 using UnityEngine;
 using MonoMod.RuntimeDetour;
-using CustomItems;
 namespace ItemAPI
 {
     public class CompanionBuilder

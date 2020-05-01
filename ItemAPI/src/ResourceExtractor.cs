@@ -7,26 +7,29 @@ using SGUI;
 using UnityEngine;
 using System.Reflection;
 using System.Diagnostics;
+using ItemAPI;
 
 namespace ItemAPI
 {
     public static class ResourceExtractor
     {
         private static string spritesDirectory = Path.Combine(ETGMod.ResourcesDirectory, "sprites");
-        private static Assembly baseAssembly;
         /// <summary>
         /// Converts all png's in a folder to a list of Texture2D objects
         /// </summary>
-        public static List<Texture2D> GetTexturesFromFolder(string folder)
+        public static List<Texture2D> GetTexturesFromDirectory(string directoryPath)
         {
-            string collectionPath = Path.Combine(spritesDirectory, folder);
-            if (!Directory.Exists(collectionPath))
+            if (!Directory.Exists(directoryPath))
+            {
+                ETGModConsole.Log(directoryPath + " not found.");
                 return null;
-
+            }
 
             List<Texture2D> textures = new List<Texture2D>();
-            foreach (string filePath in Directory.GetFiles(collectionPath))
+            foreach (string filePath in Directory.GetFiles(directoryPath))
             {
+                if (!filePath.EndsWith(".png")) continue;
+
                 Texture2D texture = BytesToTexture(File.ReadAllBytes(filePath), Path.GetFileName(filePath).Replace(".png", ""));
                 textures.Add(texture);
             }
@@ -36,13 +39,13 @@ namespace ItemAPI
         /// <summary>
         /// Creates a Texture2D from a file in the sprites directory
         /// </summary>
-        public static Texture2D GetTextureFromFile(string fileName)
+        public static Texture2D GetTextureFromFile(string fileName, string extension = ".png")
         {
-            fileName = fileName.Replace(".png", "");
-            string filePath = Path.Combine(spritesDirectory, fileName + ".png");
+            fileName = fileName.Replace(extension, "");
+            string filePath = Path.Combine(spritesDirectory, fileName + extension);
             if (!File.Exists(filePath))
             {
-                ETGModConsole.Log("<color=#FF0000FF>" + filePath + " not found. </color>");
+                ETGModConsole.Log(filePath + " not found.");
                 return null;
             }
             Texture2D texture = BytesToTexture(File.ReadAllBytes(filePath), fileName);
@@ -78,6 +81,23 @@ namespace ItemAPI
             return texture;
         }
 
+        public static string[] GetLinesFromEmbeddedResource(string filePath)
+        {
+            string allLines = BytesToString(ExtractEmbeddedResource(filePath));
+            return allLines.Split('\n');
+        }
+
+        public static string[] GetLinesFromFile(string filePath)
+        {
+            string allLines = BytesToString(File.ReadAllBytes(filePath));
+            return allLines.Split('\n');
+        }
+
+        public static string BytesToString(byte[] bytes)
+        {
+            return System.Text.Encoding.UTF8.GetString(bytes, 0, bytes.Length);
+        }
+
         /// <summary>
         /// Returns a list of folders in the ETG resources directory
         /// </summary>
@@ -99,13 +119,12 @@ namespace ItemAPI
         /// <summary>
         /// Converts an embedded resource to a byte array
         /// </summary>
-        public static byte[] ExtractEmbeddedResource(String filename)
+        public static byte[] ExtractEmbeddedResource(String filePath)
         {
-            if (baseAssembly == null)
-            {
-                throw new NullReferenceException("Assembly not set! Did you call ItemBuilder.Init() ?");
-            }
-            using (Stream resFilestream = baseAssembly.GetManifestResourceStream(filename))
+            filePath = filePath.Replace("/", ".");
+            filePath = filePath.Replace("\\", ".");
+            var baseAssembly = Assembly.GetCallingAssembly();
+            using (Stream resFilestream = baseAssembly.GetManifestResourceStream(filePath))
             {
                 if (resFilestream == null)
                 {
@@ -123,8 +142,6 @@ namespace ItemAPI
         public static Texture2D GetTextureFromResource(string resourceName)
         {
             string file = resourceName;
-            file = file.Replace("/", ".");
-            file = file.Replace("\\", ".");
             byte[] bytes = ExtractEmbeddedResource(file);
             if (bytes == null)
             {
@@ -151,27 +168,14 @@ namespace ItemAPI
         /// </summary>
         public static string[] GetResourceNames()
         {
-            if (baseAssembly == null)
-            {
-                throw new NullReferenceException("Assembly not set! Did you call ItemBuilder.Init() ?");
-            }
+            var baseAssembly = Assembly.GetCallingAssembly();
             string[] names = baseAssembly.GetManifestResourceNames();
             if (names == null)
             {
-                ETGModConsole.Log("No resources found.");
+                ETGModConsole.Log("No manifest resources found.");
                 return null;
             }
             return names;
-        }
-
-        public static void SetAssembly(Assembly assembly)
-        {
-            baseAssembly = assembly;
-        }
-
-        public static void SetAssembly(Type t)
-        {
-            baseAssembly = t.Assembly;
         }
     }
 }

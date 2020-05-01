@@ -16,7 +16,7 @@ namespace ItemAPI
             string itemName = "Boss Bullets"; 
 
             //Refers to an embedded png in the project. Make sure to embed your resources! Google it
-            string resourceName = "CustomItems/Resources/boss_bullets_icon"; 
+            string resourceName = "ItemAPI/Resources/boss_bullets_icon"; 
 
             //Create new GameObject
             GameObject obj = new GameObject(itemName);

@@ -5,7 +5,7 @@ using System.Text;
 using System.Reflection;
 using UnityEngine;
 
-using CustomItems;
+using ItemAPI;
 namespace ItemAPI
 {
     public static class SpriteBuilder
@@ -18,21 +18,21 @@ namespace ItemAPI
         /// Returns an object with a tk2dSprite component with the 
         /// texture of a file in the sprites folder
         /// </summary>
-        public static GameObject SpriteFromFile(string spriteName, GameObject obj = null, bool copyFromExisting = false)
+        public static GameObject SpriteFromFile(string spriteName, GameObject obj = null)
         {
             string filename = spriteName.Replace(".png", "");
 
             var texture = ResourceExtractor.GetTextureFromFile(filename);
             if (texture == null) return null;
 
-            return SpriteFromTexture(texture, spriteName, obj, copyFromExisting);
+            return SpriteFromTexture(texture, spriteName, obj);
         }
 
         /// <summary>
         /// Returns an object with a tk2dSprite component with the 
         /// texture of an embedded resource
         /// </summary>
-        public static GameObject SpriteFromResource(string spriteName, GameObject obj = null, bool copyFromExisting = false)
+        public static GameObject SpriteFromResource(string spriteName, GameObject obj = null)
         {
             string extension = !spriteName.EndsWith(".png") ? ".png" : "";
             string resourcePath = spriteName + extension;
@@ -40,23 +40,20 @@ namespace ItemAPI
             var texture = ResourceExtractor.GetTextureFromResource(resourcePath);
             if (texture == null) return null;
 
-            return SpriteFromTexture(texture, resourcePath, obj, copyFromExisting);
+            return SpriteFromTexture(texture, resourcePath, obj);
         }
 
         /// <summary>
         /// Returns an object with a tk2dSprite component with the texture provided
         /// </summary>
-        public static GameObject SpriteFromTexture(Texture2D texture, string spriteName, GameObject obj = null, bool copyFromExisting = false)
+        public static GameObject SpriteFromTexture(Texture2D texture, string spriteName, GameObject obj = null)
         {
             if (obj == null)
             {
                 obj = new GameObject();
             }
             tk2dSprite sprite;
-            if (copyFromExisting)
-                sprite = obj.AddComponent<tk2dSprite>(baseSprite);
-            else
-                sprite = obj.AddComponent<tk2dSprite>();
+            sprite = obj.AddComponent<tk2dSprite>();
 
             int id = AddSpriteToCollection(spriteName, itemCollection);
             sprite.SetSprite(itemCollection, id);
@@ -64,8 +61,6 @@ namespace ItemAPI
             sprite.IsPerpendicular = true;
 
             obj.GetComponent<BraveBehaviour>().sprite = sprite;
-            FakePrefab.MarkAsFakePrefab(obj);
-            obj.SetActive(false);
 
             return obj;
         }
@@ -248,7 +243,6 @@ namespace ItemAPI
             Type type = comp.GetType();
             if (type != other.GetType()) return null; // type mis-match
             PropertyInfo[] pinfos = type.GetProperties();
-            //CustomItems.Tools.Print($"{typeof(T)} + Properties: ");
             foreach (var pinfo in pinfos)
             {
                 if (pinfo.CanWrite)
@@ -271,6 +265,11 @@ namespace ItemAPI
                 finfo.SetValue(comp, finfo.GetValue(other));
             }
             return comp as T;
+        }
+
+        public static void SetColor(this tk2dSprite sprite, Color color)
+        {
+            sprite.renderer.material.SetColor("_OverrideColor", color);
         }
 
         public static T AddComponent<T>(this GameObject go, T toAdd) where T : Component
