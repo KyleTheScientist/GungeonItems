@@ -45,8 +45,9 @@ namespace ItemAPI
             item.consumable = false;
             item.quality = ItemQuality.C;
 
+            //Create a synergy entry with hot lead as the other mandatory item. 
             List<string> mandatorySynergyItems = new List<string>() { "kts:sweating_bullets", "hot_lead" };
-            CustomSynergies.Add("Is it hot in here?", mandatorySynergyItems);
+            CustomSynergies.Add("Is it hotter in here?", mandatorySynergyItems);
         }
 
         //Add the item's functionality down here! I stole most of this from the Stuffed Star active item code!
@@ -68,9 +69,15 @@ namespace ItemAPI
         private void StartEffect(PlayerController user)
         {
             user.healthHaver.NextShotKills = true;
+
+            //This is where we actually implement the synergy with hot lead
+            //This can be done anywhere in the class. In this case, if the 
+            //player has hot lead, the damage boost will be 4x instead of 3x.
             float damageBoost = 3;
             if (user.HasMTGConsoleID("hot_lead")) 
                 damageBoost = 4;
+
+            //Adding a temporary stat boost and forcing the player stats to update
             damageMod = this.AddPassiveStatModifier(PlayerStats.StatType.Damage, damageBoost, StatModifier.ModifyMethod.MULTIPLICATIVE);
             user.stats.RecalculateStats(user, force: true, recursive: true);
         }
@@ -80,12 +87,15 @@ namespace ItemAPI
         {
             if (damageMod == null) return;
             user.healthHaver.NextShotKills = false;
+            //Removing the temporary stat boost and forcing the player stats to update
             this.RemovePassiveStatModifier(damageMod);
+            user.stats.RecalculateStats(user, force: true, recursive: true);
         }
 
         protected override void OnPreDrop(PlayerController user)
         {
             base.OnPreDrop(user);
+            //Forcing the effect to end in case the player drops the item while it is active.
             EndEffect(user);
         }
 

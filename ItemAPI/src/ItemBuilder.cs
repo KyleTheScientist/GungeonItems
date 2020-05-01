@@ -102,7 +102,7 @@ namespace ItemAPI
             }
         }
 
-        public static void AddToSubShop(this PickupObject po, ShopType type, float weight)
+        public static void AddToSubShop(this PickupObject po, ShopType type, float weight = 1)
         {
             shopInventories[type].defaultItemDrops.Add(new WeightedGameObject()
             {

@@ -43,6 +43,9 @@ namespace ItemAPI
 
             //Set the rarity of the item
             item.quality = PickupObject.ItemQuality.S;
+            
+            //Add to the cursula shop
+            item.AddToSubShop(ItemBuilder.ShopType.Cursula);
         }
     }
 }
