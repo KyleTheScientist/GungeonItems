@@ -7,42 +7,67 @@ using System.Diagnostics;
 using System.Reflection;
 using System.IO;
 using System.Collections;
+using MonoMod.RuntimeDetour;
+using CustomItems;
 
 namespace ItemAPI
 {
     public static class ItemBuilder
     {
-        /// <summary>
-        /// Sets the base assembly of the ResourceExtractor, so 
-        /// resources can be accessed
-        /// </summary>
-        public static void Init()
-        {
-            try
-            {
-                MethodBase method = new StackFrame(1, false).GetMethod();
-                var declaringType = method.DeclaringType;
-                ResourceExtractor.SetAssembly(declaringType);
-            }
-            catch (Exception e)
-            {
-                ETGModConsole.Log(e.Message);
-                ETGModConsole.Log(e.StackTrace);
-            }
-        }
 
         public enum CooldownType
         {
             Timed, Damage, PerRoom, None
         }
 
+        public enum ShopType
+        {
+            Goopton, Flynt, Cursula, Trorc, OldRed
+        }
+
+        public static Dictionary<ShopType, GenericLootTable> shopInventories;
+
+        /// <summary>
+        /// Initializes hooks and grabs necessary assets for building items
+        /// </summary>
+        public static void Init()
+        {
+            FakePrefabHooks.Init();
+            CompanionBuilder.Init();
+            LoadShopTables();
+        }
+
+        /// <summary>
+        /// Loads the loot tables of shops for later modification.
+        /// </summary>
+        private static void LoadShopTables()
+        {
+            shopInventories = new Dictionary<ShopType, GenericLootTable>();
+            shopInventories.Add(ShopType.Flynt, LoadShopTable("Shop_Key_Items_01"));
+            shopInventories.Add(ShopType.Trorc, LoadShopTable("Shop_Truck_Items_01"));
+            shopInventories.Add(ShopType.Cursula, LoadShopTable("Shop_Curse_Items_01"));
+            shopInventories.Add(ShopType.Goopton, LoadShopTable("Shop_Goop_Items_01"));
+            shopInventories.Add(ShopType.OldRed, LoadShopTable("Shop_Blank_Items_01"));
+        }
+
+        /// <summary>
+        /// Gets a loot table from shared_auto_001 from name
+        /// </summary>
+        public static GenericLootTable LoadShopTable(string assetName)
+        {
+            return ResourceManager.LoadAssetBundle("shared_auto_001").LoadAsset<GenericLootTable>(assetName);
+        }
+
         /// <summary>
         /// Adds a tk2dSprite component to an object and adds that sprite to the 
         /// ammonomicon for later use. If obj is null, returns a new GameObject with the sprite
         /// </summary>
-        public static GameObject AddSpriteToObject(string name, string resourcePath, GameObject obj = null, bool copyFromExisting = true)
+        public static GameObject AddSpriteToObject(string name, string resourcePath, GameObject obj = null)
         {
-            GameObject spriteObject = SpriteBuilder.SpriteFromResource(resourcePath, obj, copyFromExisting);
+            GameObject spriteObject = SpriteBuilder.SpriteFromResource(resourcePath, obj);
+            FakePrefab.MarkAsFakePrefab(spriteObject);
+            obj.SetActive(false);
+
             spriteObject.name = name;
             return spriteObject;
         }
@@ -51,7 +76,7 @@ namespace ItemAPI
         /// Finishes the item setup, adds it to the item databases, adds an encounter trackable 
         /// blah, blah, blah
         /// </summary>
-        public static void SetupItem(PickupObject item, string shortDesc, string longDesc, string idPool)
+        public static void SetupItem(this PickupObject item, string shortDesc, string longDesc, string idPool = "customItems")
         {
             try
             {
@@ -77,10 +102,22 @@ namespace ItemAPI
             }
         }
 
+        public static void AddToSubShop(this PickupObject po, ShopType type, float weight)
+        {
+            shopInventories[type].defaultItemDrops.Add(new WeightedGameObject()
+            {
+                pickupId = po.PickupObjectId,
+                weight = weight,
+                rawGameObject = po.gameObject,
+                forceDuplicatesPossible = false,
+                additionalPrerequisites = new DungeonPrerequisite[0]
+            });
+        }
+
         /// <summary>
         /// Sets the cooldown type and length of a PlayerItem, and resets all other cooldown types
         /// </summary>
-        public static void SetCooldownType(PlayerItem item, CooldownType cooldownType, float value)
+        public static void SetCooldownType(this PlayerItem item, CooldownType cooldownType, float value)
         {
             item.damageCooldown = -1;
             item.roomCooldown = -1;
@@ -103,13 +140,18 @@ namespace ItemAPI
         /// <summary>
         /// Adds a passive player stat modifier to a PlayerItem or PassiveItem
         /// </summary>
-        public static void AddPassiveStatModifier(PickupObject po, PlayerStats.StatType statType, float amount, StatModifier.ModifyMethod method = StatModifier.ModifyMethod.ADDITIVE)
+        public static void AddPassiveStatModifier(this PickupObject po, PlayerStats.StatType statType, float amount, StatModifier.ModifyMethod method = StatModifier.ModifyMethod.ADDITIVE)
         {
             StatModifier modifier = new StatModifier();
             modifier.amount = amount;
             modifier.statToBoost = statType;
             modifier.modifyType = method;
 
+            po.AddPassiveStatModifier(modifier);
+        }
+
+        public static void AddPassiveStatModifier(this PickupObject po, StatModifier modifier)
+        {
             if (po is PlayerItem)
             {
                 var item = (po as PlayerItem);
@@ -132,6 +174,35 @@ namespace ItemAPI
             }
         }
 
+        public static bool RemovePassiveStatModifier(this PickupObject po, StatModifier modifier)
+        {
+            bool success = false;
+            if (po is PlayerItem)
+            {
+                var item = (po as PlayerItem);
+                if (item.passiveStatModifiers == null) return false;
+
+                var list = item.passiveStatModifiers.ToList();
+                success = list.Remove(modifier);
+                item.passiveStatModifiers = list.ToArray();
+            }
+            else if (po is PassiveItem)
+            {
+                var item = (po as PassiveItem);
+                if (item.passiveStatModifiers == null) return false;
+
+                var list = item.passiveStatModifiers.ToList();
+                success = list.Remove(modifier);
+                item.passiveStatModifiers = list.ToArray();
+            }
+            else
+            {
+                throw new NotSupportedException("Object must be of type PlayerItem or PassiveItem");
+            }
+            return success;
+        }
+
+
         public static IEnumerator HandleDuration(PlayerItem item, float duration, PlayerController user, Action<PlayerController> OnFinish)
         {
             if (item.IsCurrentlyActive)
@@ -153,7 +224,6 @@ namespace ItemAPI
             }
             SetPrivateType<PlayerItem>(item, "m_isCurrentlyActive", false);
             item.OnActivationStatusChanged?.Invoke(item);
-
             OnFinish?.Invoke(user);
             yield break;
         }
