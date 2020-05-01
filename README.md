@@ -8,6 +8,7 @@ Because of the way Mod the Gungeon loads external libraries, for now, you'll jus
 - ItemBuilder.cs
 - SpriteBuilder.cs
 - ResourceExtractor.cs
+- CustomSynergies.cs
 - FakePrefab.cs
 - FakePrefabHooks.cs
 
